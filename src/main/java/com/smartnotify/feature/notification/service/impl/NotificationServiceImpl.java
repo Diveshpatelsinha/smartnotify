@@ -5,6 +5,7 @@ import com.smartnotify.feature.notification.dto.*;
 import com.smartnotify.feature.notification.entity.Notification;
 import com.smartnotify.feature.notification.mapper.NotificationMapper;
 import com.smartnotify.feature.notification.repository.NotificationRepository;
+import com.smartnotify.feature.notification.service.NotificationPushService;
 import com.smartnotify.feature.notification.service.NotificationService;
 import com.smartnotify.feature.user.entity.User;
 import com.smartnotify.feature.user.repository.UserRepository;
@@ -25,6 +26,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final NotificationPushService notificationPushService;
 
     @Override
     @Transactional(readOnly = true)
@@ -82,10 +84,11 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
 
         Notification saved = notificationRepository.save(notification);
+        NotificationResponseDTO responseDTO = NotificationMapper.toResponseDTO(saved);
 
-        // TODO (Step 13): push this notification instantly via WebSocket to the recipient
+        notificationPushService.pushToUser(recipient.getEmail(), responseDTO);
 
-        return NotificationMapper.toResponseDTO(saved);
+        return responseDTO;
     }
 
     @Override
@@ -102,9 +105,10 @@ public class NotificationServiceImpl implements NotificationService {
                         .build())
                 .toList();
 
-        notificationRepository.saveAll(notifications);
+        List<Notification> saved = notificationRepository.saveAll(notifications);
 
-        // TODO (Step 13): push each notification instantly via WebSocket to all connected users
+        NotificationResponseDTO broadcastPayload = NotificationMapper.toResponseDTO(saved.get(0));
+        notificationPushService.pushBroadcast(broadcastPayload);
     }
 
     @Override
