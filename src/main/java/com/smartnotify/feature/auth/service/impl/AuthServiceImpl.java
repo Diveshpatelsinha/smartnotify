@@ -12,7 +12,11 @@ import com.smartnotify.feature.user.entity.RoleName;
 import com.smartnotify.feature.user.entity.User;
 import com.smartnotify.feature.user.repository.RoleRepository;
 import com.smartnotify.feature.user.repository.UserRepository;
+import com.smartnotify.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +29,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
     @Override
     public AuthResponseDTO register(RegisterRequestDTO request) {
@@ -45,24 +51,27 @@ public class AuthServiceImpl implements AuthService {
 
         User savedUser = userRepository.save(user);
 
-        // TODO (Step 12): replace placeholder with real JWT generation via JwtUtil
-        String placeholderToken = "TOKEN_WILL_BE_GENERATED_IN_STEP_12";
+        String token = jwtUtil.generateToken(
+                savedUser.getEmail(), savedUser.getId(), savedUser.getRole().getName().name());
 
-        return AuthMapper.toAuthResponseDTO(savedUser, placeholderToken);
+        return AuthMapper.toAuthResponseDTO(savedUser, token);
     }
 
     @Override
     public AuthResponseDTO login(LoginRequestDTO request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid email or password"));
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        } catch (BadCredentialsException e) {
             throw new ResourceNotFoundException("Invalid email or password");
         }
 
-        // TODO (Step 12): replace placeholder with real JWT generation via JwtUtil
-        String placeholderToken = "TOKEN_WILL_BE_GENERATED_IN_STEP_12";
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid email or password"));
 
-        return AuthMapper.toAuthResponseDTO(user, placeholderToken);
+        String token = jwtUtil.generateToken(
+                user.getEmail(), user.getId(), user.getRole().getName().name());
+
+        return AuthMapper.toAuthResponseDTO(user, token);
     }
 }
