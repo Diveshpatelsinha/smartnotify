@@ -15,8 +15,7 @@ public class CurrentUserProvider {
 
     public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        return userService.getUserEntityByEmail(email);
+        return userService.getUserEntityByEmail(authentication.getName());
     }
 
     public Long getCurrentUserId() {

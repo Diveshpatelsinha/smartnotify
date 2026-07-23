@@ -38,8 +38,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional(readOnly = true)
     public NotificationResponseDTO getUserNotificationById(Long userId, Long notificationId) {
-        Notification notification = getOwnedNotification(userId, notificationId);
-        return NotificationMapper.toResponseDTO(notification);
+        return NotificationMapper.toResponseDTO(getOwnedNotification(userId, notificationId));
     }
 
     @Override
@@ -47,27 +46,20 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = getOwnedNotification(userId, notificationId);
         notification.setRead(true);
         return NotificationMapper.toResponseDTO(notification);
-        // no explicit save() needed - entity is managed within this @Transactional method,
-        // Hibernate auto-flushes changes on commit (dirty checking)
     }
 
     @Override
     public void deleteUserNotification(Long userId, Long notificationId) {
-        Notification notification = getOwnedNotification(userId, notificationId);
-        notificationRepository.delete(notification);
+        notificationRepository.delete(getOwnedNotification(userId, notificationId));
     }
 
     @Override
     @Transactional(readOnly = true)
     public DashboardStatsDTO getDashboardStats(Long userId) {
-        long total = notificationRepository.countByRecipientId(userId);
-        long read = notificationRepository.countByRecipientIdAndReadTrue(userId);
-        long unread = notificationRepository.countByRecipientIdAndReadFalse(userId);
-
         return DashboardStatsDTO.builder()
-                .totalNotifications(total)
-                .readNotifications(read)
-                .unreadNotifications(unread)
+                .totalNotifications(notificationRepository.countByRecipientId(userId))
+                .readNotifications(notificationRepository.countByRecipientIdAndReadTrue(userId))
+                .unreadNotifications(notificationRepository.countByRecipientIdAndReadFalse(userId))
                 .build();
     }
 
@@ -87,7 +79,6 @@ public class NotificationServiceImpl implements NotificationService {
         NotificationResponseDTO responseDTO = NotificationMapper.toResponseDTO(saved);
 
         notificationPushService.pushToUser(recipient.getEmail(), responseDTO);
-
         return responseDTO;
     }
 
@@ -107,15 +98,15 @@ public class NotificationServiceImpl implements NotificationService {
 
         List<Notification> saved = notificationRepository.saveAll(notifications);
 
-        NotificationResponseDTO broadcastPayload = NotificationMapper.toResponseDTO(saved.get(0));
-        notificationPushService.pushBroadcast(broadcastPayload);
+        if (!saved.isEmpty()) {
+            notificationPushService.pushBroadcast(NotificationMapper.toResponseDTO(saved.get(0)));
+        }
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<NotificationResponseDTO> getAllNotifications(Pageable pageable) {
-        return notificationRepository.findAll(pageable)
-                .map(NotificationMapper::toResponseDTO);
+        return notificationRepository.findAll(pageable).map(NotificationMapper::toResponseDTO);
     }
 
     @Override
@@ -126,11 +117,6 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.deleteById(notificationId);
     }
 
-    /**
-     * Ensures a notification exists AND belongs to the given user before
-     * allowing read/delete access - prevents one user from touching another
-     * user's notifications by guessing IDs (IDOR protection).
-     */
     private Notification getOwnedNotification(Long userId, Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Notification not found with id: " + notificationId));
@@ -138,7 +124,6 @@ public class NotificationServiceImpl implements NotificationService {
         if (!notification.getRecipient().getId().equals(userId)) {
             throw new ResourceNotFoundException("Notification not found with id: " + notificationId);
         }
-
         return notification;
     }
 }

@@ -8,7 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class DashboardStatsDTO {
-
     private long totalNotifications;
     private long readNotifications;
     private long unreadNotifications;

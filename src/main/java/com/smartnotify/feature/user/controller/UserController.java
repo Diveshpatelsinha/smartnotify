@@ -25,7 +25,6 @@ public class UserController {
     @Operation(summary = "Get the logged-in user's profile")
     public ResponseEntity<ApiResponse<UserResponseDTO>> getMyProfile() {
         Long userId = currentUserProvider.getCurrentUserId();
-        UserResponseDTO profile = userService.getProfile(userId);
-        return ResponseEntity.ok(ApiResponse.success("Profile fetched successfully", profile));
+        return ResponseEntity.ok(ApiResponse.success("Profile fetched successfully", userService.getProfile(userId)));
     }
 }

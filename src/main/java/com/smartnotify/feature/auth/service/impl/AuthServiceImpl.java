@@ -39,7 +39,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
-                .orElseThrow(() -> new ResourceNotFoundException("Default role ROLE_USER not found - seeding may have failed"));
+                .orElseThrow(() -> new ResourceNotFoundException("Default role ROLE_USER not found"));
 
         User user = User.builder()
                 .fullName(request.getFullName())
@@ -50,10 +50,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         User savedUser = userRepository.save(user);
-
-        String token = jwtUtil.generateToken(
-                savedUser.getEmail(), savedUser.getId(), savedUser.getRole().getName().name());
-
+        String token = jwtUtil.generateToken(savedUser.getEmail(), savedUser.getId(), savedUser.getRole().getName().name());
         return AuthMapper.toAuthResponseDTO(savedUser, token);
     }
 
@@ -69,9 +66,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid email or password"));
 
-        String token = jwtUtil.generateToken(
-                user.getEmail(), user.getId(), user.getRole().getName().name());
-
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().getName().name());
         return AuthMapper.toAuthResponseDTO(user, token);
     }
 }

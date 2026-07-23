@@ -19,9 +19,8 @@ public class JwtUtil {
     private final SecretKey signingKey;
     private final long expirationMs;
 
-    public JwtUtil(
-            @Value("${smartnotify.jwt.secret}") String secret,
-            @Value("${smartnotify.jwt.expiration-ms}") long expirationMs) {
+    public JwtUtil(@Value("${smartnotify.jwt.secret}") String secret,
+                   @Value("${smartnotify.jwt.expiration-ms}") long expirationMs) {
         this.signingKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.expirationMs = expirationMs;
     }
@@ -29,7 +28,6 @@ public class JwtUtil {
     public String generateToken(String email, Long userId, String role) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMs);
-
         return Jwts.builder()
                 .subject(email)
                 .claim("userId", userId)
@@ -45,8 +43,7 @@ public class JwtUtil {
     }
 
     public Long extractUserId(String token) {
-        Claims claims = extractAllClaims(token);
-        return claims.get("userId", Long.class);
+        return extractAllClaims(token).get("userId", Long.class);
     }
 
     public boolean isTokenValid(String token) {
@@ -62,16 +59,11 @@ public class JwtUtil {
         return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
-    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+    private <T> T extractClaim(String token, Function<Claims, T> resolver) {
+        return resolver.apply(extractAllClaims(token));
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(signingKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        return Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token).getPayload();
     }
 }

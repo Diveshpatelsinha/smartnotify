@@ -19,8 +19,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO getProfile(Long userId) {
-        User user = getUserEntityById(userId);
-        return UserMapper.toResponseDTO(user);
+        return UserMapper.toResponseDTO(getUserEntityById(userId));
     }
 
     @Override

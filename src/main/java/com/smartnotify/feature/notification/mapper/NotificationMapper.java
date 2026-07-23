@@ -8,34 +8,24 @@ import java.util.stream.Collectors;
 
 public class NotificationMapper {
 
-    private NotificationMapper() {
-        // prevent instantiation - utility class
-    }
+    private NotificationMapper() {}
 
-    public static NotificationResponseDTO toResponseDTO(Notification notification) {
-        if (notification == null) {
-            return null;
-        }
-
+    public static NotificationResponseDTO toResponseDTO(Notification n) {
+        if (n == null) return null;
         return NotificationResponseDTO.builder()
-                .id(notification.getId())
-                .title(notification.getTitle())
-                .message(notification.getMessage())
-                .type(notification.getType())
-                .read(notification.isRead())
-                .recipientId(notification.getRecipient() != null ? notification.getRecipient().getId() : null)
-                .recipientName(notification.getRecipient() != null ? notification.getRecipient().getFullName() : null)
-                .createdAt(notification.getCreatedAt())
+                .id(n.getId())
+                .title(n.getTitle())
+                .message(n.getMessage())
+                .type(n.getType())
+                .read(n.isRead())
+                .recipientId(n.getRecipient() != null ? n.getRecipient().getId() : null)
+                .recipientName(n.getRecipient() != null ? n.getRecipient().getFullName() : null)
+                .createdAt(n.getCreatedAt())
                 .build();
     }
 
-    public static List<NotificationResponseDTO> toResponseDTOList(List<Notification> notifications) {
-        if (notifications == null) {
-            return List.of();
-        }
-
-        return notifications.stream()
-                .map(NotificationMapper::toResponseDTO)
-                .collect(Collectors.toList());
+    public static List<NotificationResponseDTO> toResponseDTOList(List<Notification> list) {
+        if (list == null) return List.of();
+        return list.stream().map(NotificationMapper::toResponseDTO).collect(Collectors.toList());
     }
 }

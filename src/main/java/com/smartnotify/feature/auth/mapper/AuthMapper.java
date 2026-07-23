@@ -5,15 +5,10 @@ import com.smartnotify.feature.user.entity.User;
 
 public class AuthMapper {
 
-    private AuthMapper() {
-        // prevent instantiation - utility class
-    }
+    private AuthMapper() {}
 
     public static AuthResponseDTO toAuthResponseDTO(User user, String token) {
-        if (user == null) {
-            return null;
-        }
-
+        if (user == null) return null;
         return AuthResponseDTO.builder()
                 .token(token)
                 .tokenType("Bearer")

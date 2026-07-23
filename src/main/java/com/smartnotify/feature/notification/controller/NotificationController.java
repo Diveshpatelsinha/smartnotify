@@ -27,47 +27,40 @@ public class NotificationController {
     @Operation(summary = "Get paginated notifications for the logged-in user")
     public ResponseEntity<ApiResponse<Page<NotificationResponseDTO>>> getMyNotifications(
             @PageableDefault(size = 10) Pageable pageable) {
-
         Long userId = currentUserProvider.getCurrentUserId();
-        Page<NotificationResponseDTO> notifications = notificationService.getUserNotifications(userId, pageable);
-        return ResponseEntity.ok(ApiResponse.success("Notifications fetched successfully", notifications));
+        return ResponseEntity.ok(ApiResponse.success("Notifications fetched successfully",
+                notificationService.getUserNotifications(userId, pageable)));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get a single notification by ID (must belong to the logged-in user)")
-    public ResponseEntity<ApiResponse<NotificationResponseDTO>> getNotificationById(
-            @PathVariable Long id) {
-
+    @Operation(summary = "Get a single notification by ID")
+    public ResponseEntity<ApiResponse<NotificationResponseDTO>> getNotificationById(@PathVariable Long id) {
         Long userId = currentUserProvider.getCurrentUserId();
-        NotificationResponseDTO notification = notificationService.getUserNotificationById(userId, id);
-        return ResponseEntity.ok(ApiResponse.success("Notification fetched successfully", notification));
+        return ResponseEntity.ok(ApiResponse.success("Notification fetched successfully",
+                notificationService.getUserNotificationById(userId, id)));
     }
 
     @PutMapping("/{id}/read")
     @Operation(summary = "Mark a notification as read")
-    public ResponseEntity<ApiResponse<NotificationResponseDTO>> markAsRead(
-            @PathVariable Long id) {
-
+    public ResponseEntity<ApiResponse<NotificationResponseDTO>> markAsRead(@PathVariable Long id) {
         Long userId = currentUserProvider.getCurrentUserId();
-        NotificationResponseDTO notification = notificationService.markAsRead(userId, id);
-        return ResponseEntity.ok(ApiResponse.success("Notification marked as read", notification));
+        return ResponseEntity.ok(ApiResponse.success("Notification marked as read",
+                notificationService.markAsRead(userId, id)));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a notification (must belong to the logged-in user)")
-    public ResponseEntity<ApiResponse<Void>> deleteNotification(
-            @PathVariable Long id) {
-
+    @Operation(summary = "Delete a notification")
+    public ResponseEntity<ApiResponse<Void>> deleteNotification(@PathVariable Long id) {
         Long userId = currentUserProvider.getCurrentUserId();
         notificationService.deleteUserNotification(userId, id);
         return ResponseEntity.ok(ApiResponse.success("Notification deleted successfully", null));
     }
 
     @GetMapping("/dashboard/stats")
-    @Operation(summary = "Get dashboard stats (total, read, unread) for the logged-in user")
+    @Operation(summary = "Get dashboard stats for the logged-in user")
     public ResponseEntity<ApiResponse<DashboardStatsDTO>> getDashboardStats() {
         Long userId = currentUserProvider.getCurrentUserId();
-        DashboardStatsDTO stats = notificationService.getDashboardStats(userId);
-        return ResponseEntity.ok(ApiResponse.success("Dashboard stats fetched successfully", stats));
+        return ResponseEntity.ok(ApiResponse.success("Dashboard stats fetched successfully",
+                notificationService.getDashboardStats(userId)));
     }
 }

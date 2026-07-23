@@ -26,35 +26,28 @@ public class AdminNotificationController {
     @Operation(summary = "Send a notification to a single user")
     public ResponseEntity<ApiResponse<NotificationResponseDTO>> sendToUser(
             @Valid @RequestBody SendNotificationRequestDTO request) {
-
-        NotificationResponseDTO response = notificationService.sendToUser(request);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Notification sent successfully", response));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Notification sent successfully", notificationService.sendToUser(request)));
     }
 
     @PostMapping("/broadcast")
     @Operation(summary = "Broadcast a notification to all users")
-    public ResponseEntity<ApiResponse<Void>> broadcast(
-            @Valid @RequestBody BroadcastNotificationRequestDTO request) {
-
+    public ResponseEntity<ApiResponse<Void>> broadcast(@Valid @RequestBody BroadcastNotificationRequestDTO request) {
         notificationService.broadcast(request);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Notification broadcast to all users", null));
     }
 
     @GetMapping
-    @Operation(summary = "Get all notifications across all users (paginated)")
+    @Operation(summary = "Get all notifications across all users")
     public ResponseEntity<ApiResponse<Page<NotificationResponseDTO>>> getAllNotifications(
             @PageableDefault(size = 20) Pageable pageable) {
-
-        Page<NotificationResponseDTO> notifications = notificationService.getAllNotifications(pageable);
-        return ResponseEntity.ok(ApiResponse.success("All notifications fetched successfully", notifications));
+        return ResponseEntity.ok(ApiResponse.success("All notifications fetched successfully",
+                notificationService.getAllNotifications(pageable)));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete any notification by ID (admin override)")
+    @Operation(summary = "Delete any notification by ID")
     public ResponseEntity<ApiResponse<Void>> deleteNotification(@PathVariable Long id) {
         notificationService.adminDeleteNotification(id);
         return ResponseEntity.ok(ApiResponse.success("Notification deleted successfully", null));

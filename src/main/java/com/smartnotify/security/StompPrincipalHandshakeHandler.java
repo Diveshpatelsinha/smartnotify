@@ -16,8 +16,7 @@ public class StompPrincipalHandshakeHandler extends DefaultHandshakeHandler {
     protected Principal determineUser(@NonNull ServerHttpRequest request,
                                       @NonNull WebSocketHandler wsHandler,
                                       @NonNull Map<String, Object> attributes) {
-
         String email = (String) attributes.get("email");
-        return () -> email; // Principal is a functional interface - getName() returns email
+        return () -> email;
     }
 }

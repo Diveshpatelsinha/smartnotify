@@ -23,21 +23,14 @@ public class AuthController {
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user account")
-    public ResponseEntity<ApiResponse<AuthResponseDTO>> register(
-            @Valid @RequestBody RegisterRequestDTO request) {
-
-        AuthResponseDTO response = authService.register(request);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponse.success("User registered successfully", response));
+    public ResponseEntity<ApiResponse<AuthResponseDTO>> register(@Valid @RequestBody RegisterRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("User registered successfully", authService.register(request)));
     }
 
     @PostMapping("/login")
     @Operation(summary = "Authenticate a user and receive a JWT token")
-    public ResponseEntity<ApiResponse<AuthResponseDTO>> login(
-            @Valid @RequestBody LoginRequestDTO request) {
-
-        AuthResponseDTO response = authService.login(request);
-        return ResponseEntity.ok(ApiResponse.success("Login successful", response));
+    public ResponseEntity<ApiResponse<AuthResponseDTO>> login(@Valid @RequestBody LoginRequestDTO request) {
+        return ResponseEntity.ok(ApiResponse.success("Login successful", authService.login(request)));
     }
 }

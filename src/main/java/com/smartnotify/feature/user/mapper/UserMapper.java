@@ -5,15 +5,10 @@ import com.smartnotify.feature.user.entity.User;
 
 public class UserMapper {
 
-    private UserMapper() {
-        // prevent instantiation - utility class
-    }
+    private UserMapper() {}
 
     public static UserResponseDTO toResponseDTO(User user) {
-        if (user == null) {
-            return null;
-        }
-
+        if (user == null) return null;
         return UserResponseDTO.builder()
                 .id(user.getId())
                 .fullName(user.getFullName())
