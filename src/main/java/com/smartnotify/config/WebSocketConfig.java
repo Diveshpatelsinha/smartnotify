@@ -17,7 +17,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        // Plain native WebSocket endpoint (no SockJS) - what our Angular client uses
         registry.addEndpoint("/ws")
+                .setHandshakeHandler(principalHandshakeHandler)
+                .addInterceptors(jwtHandshakeInterceptor)
+                .setAllowedOrigins("http://localhost:4200");
+
+        // SockJS fallback endpoint kept for compatibility/testing tools that need it
+        registry.addEndpoint("/ws-sockjs")
                 .setHandshakeHandler(principalHandshakeHandler)
                 .addInterceptors(jwtHandshakeInterceptor)
                 .setAllowedOrigins("http://localhost:4200")
